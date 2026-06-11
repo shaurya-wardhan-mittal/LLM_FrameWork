@@ -1,0 +1,3 @@
+{"instruction":"Summarize the following text in one sentence.","input":"The project aims to reduce onboarding time for new customers by automating support workflows.","output":"The project automates support workflows to shorten customer onboarding time."}
+{"instruction":"Answer the question using the provided context.","input":"Context: Paris is the capital of France. Question: What is the capital of France?","output":"Paris."}
+{"instruction":"Write a short product description.","input":"Product: a compact travel bottle","output":"A compact travel bottle designed for convenience on the go."}

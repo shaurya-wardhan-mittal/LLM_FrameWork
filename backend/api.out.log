@@ -1,0 +1,6 @@
+INFO:     127.0.0.1:61907 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61914 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53491 - "POST /upload HTTP/1.1" 202 Accepted
+INFO:     127.0.0.1:53491 - "GET /runs/de6e640b-f3d4-42ce-8c42-8d0301947e54 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53491 - "GET /runs/de6e640b-f3d4-42ce-8c42-8d0301947e54 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53491 - "GET /runs/de6e640b-f3d4-42ce-8c42-8d0301947e54 HTTP/1.1" 200 OK

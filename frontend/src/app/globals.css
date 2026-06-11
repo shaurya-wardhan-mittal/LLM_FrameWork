@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-slate-950 text-slate-100 antialiased;
+  background-image:
+    radial-gradient(circle at 15% 10%, rgb(14 165 233 / 0.12), transparent 32rem),
+    radial-gradient(circle at 85% 80%, rgb(99 102 241 / 0.10), transparent 28rem);
+}
+
+@keyframes progress {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(420%); }
+}
+
+.progress {
+  animation: progress 1.6s ease-in-out infinite;
+}

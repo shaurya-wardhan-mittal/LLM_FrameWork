@@ -1,0 +1,14 @@
+[
+  {
+    "conversations": [
+      {"from": "human", "value": "What is LoRA?"},
+      {"from": "gpt", "value": "LoRA (Low-Rank Adaptation) is a parameter-efficient fine-tuning method."}
+    ]
+  },
+  {
+    "conversations": [
+      {"from": "human", "value": "Explain QLoRA in one sentence."},
+      {"from": "gpt", "value": "QLoRA combines 4-bit quantized base weights with LoRA adapters for memory-efficient training."}
+    ]
+  }
+]
