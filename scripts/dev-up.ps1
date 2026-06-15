@@ -21,6 +21,14 @@ $apiJob = Start-Job -ScriptBlock {
 
 Start-Sleep -Seconds 2
 
+$npmCmd = Get-Command npm -ErrorAction SilentlyContinue
+if ($null -eq $npmCmd) {
+    Write-Host "Node.js / npm is not installed or not on PATH." -ForegroundColor Yellow
+    Write-Host "Backend is running at http://localhost:8000." -ForegroundColor Green
+    Write-Host "Install Node.js and rerun .\scripts\start-local.ps1 to start the frontend UI." -ForegroundColor Yellow
+    return
+}
+
 if (-not (Test-Path "$Frontend\node_modules")) {
     Set-Location $Frontend
     npm install

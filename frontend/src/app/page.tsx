@@ -4,6 +4,14 @@ import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+type Model = {
+  id: string;
+  name: string;
+  params_b: number;
+  context_length: number;
+  family: string;
+};
+
 type Run = {
   id: string;
   status: "queued" | "running" | "completed" | "failed";
@@ -26,11 +34,33 @@ type Run = {
 };
 
 export default function HomePage() {
+  const [models, setModels] = useState<Model[]>([]);
+  const [selectedModelId, setSelectedModelId] = useState<string>("");
   const [run, setRun] = useState<Run | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Fetch available models
+    async function loadModels() {
+      try {
+        const response = await fetch(`${API_URL}/models`);
+        if (response.ok) {
+          const data = await response.json();
+          setModels(data.models);
+          // Set first model as default
+          if (data.models.length > 0) {
+            setSelectedModelId(data.models[0].id);
+          }
+        }
+      } catch {
+        console.error("Failed to load models");
+      }
+    }
+    loadModels();
+  }, []);
 
   useEffect(() => {
     if (!run || run.status === "completed" || run.status === "failed") return;
@@ -53,6 +83,7 @@ export default function HomePage() {
     setRun(null);
     const form = new FormData();
     form.append("file", file);
+    form.append("model_id", selectedModelId);
 
     try {
       const response = await fetch(`${API_URL}/upload`, { method: "POST", body: form });
@@ -93,6 +124,25 @@ export default function HomePage() {
           Format detection, cleaning, validation, GPU-aware strategy selection, training,
           evaluation, and adapter export run automatically.
         </p>
+      </div>
+
+      <div className="mb-6 max-w-3xl">
+        <label className="block text-sm font-medium text-slate-300">Base Model</label>
+        <select
+          value={selectedModelId}
+          onChange={(e) => setSelectedModelId(e.target.value)}
+          disabled={uploading || models.length === 0}
+          className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-slate-100 disabled:cursor-wait disabled:opacity-60"
+        >
+          {models.map((model) => (
+            <option key={model.id} value={model.id}>
+              {model.name} ({model.params_b}B)
+            </option>
+          ))}
+        </select>
+        {models.length === 0 && (
+          <p className="mt-1 text-xs text-slate-500">Loading models...</p>
+        )}
       </div>
 
       <div

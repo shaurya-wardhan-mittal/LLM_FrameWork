@@ -2,6 +2,7 @@ from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile, s
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.services.model_service.service import ModelService
 from app.workflow import create_run, get_run, train_run
 
 settings = get_settings()
@@ -26,17 +27,24 @@ def health() -> dict[str, str]:
     return {"status": "ok", "service": settings.app_name}
 
 
+@app.get("/models")
+def list_models() -> dict:
+    service = ModelService()
+    return {"models": service.list_catalog()}
+
+
 @app.post("/upload", status_code=status.HTTP_202_ACCEPTED)
 async def upload_dataset(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
+    model_id: str | None = None,
 ) -> dict:
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="The uploaded dataset is empty.")
 
     try:
-        run = create_run(file.filename or "dataset.jsonl", content)
+        run = create_run(file.filename or "dataset.jsonl", content, model_id=model_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

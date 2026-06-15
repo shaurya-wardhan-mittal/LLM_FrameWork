@@ -64,7 +64,7 @@ def get_run(run_id: str) -> dict[str, Any] | None:
         return json.loads(path.read_text(encoding="utf-8"))
 
 
-def create_run(filename: str, file_bytes: bytes) -> dict[str, Any]:
+def create_run(filename: str, file_bytes: bytes, model_id: str | None = None) -> dict[str, Any]:
     run_id = str(uuid.uuid4())
     run_dir = _run_dir(run_id)
     run_dir.mkdir(parents=True, exist_ok=False)
@@ -94,9 +94,12 @@ def create_run(filename: str, file_bytes: bytes) -> dict[str, Any]:
     except (OSError, TypeError, json.JSONDecodeError) as exc:
         raise ValueError(f"Could not read this dataset: {exc}") from exc
 
-    params_b = estimate_params_from_id(settings.default_model_id)
     gpu = probe_gpu()
     free_vram_gb = gpu.free_vram_mb / 1024 if gpu.available else 4.0
+    
+    # Use provided model_id or fall back to default
+    selected_model_id = model_id if model_id else settings.default_model_id
+    params_b = estimate_params_from_id(selected_model_id)
     strategy, rationale = select_strategy(
         free_vram_gb,
         params_b,
@@ -118,7 +121,7 @@ def create_run(filename: str, file_bytes: bytes) -> dict[str, Any]:
         "dataset_type": dataset_type,
         "row_count": len(cleaned_rows),
         "quality_report": quality_report,
-        "model_id": settings.default_model_id,
+        "model_id": selected_model_id,
         "strategy": strategy,
         "strategy_rationale": rationale,
         "estimated_vram_gb": estimate_vram_gb(
