@@ -1,4 +1,4 @@
-from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile, status
+from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
@@ -37,11 +37,17 @@ def list_models() -> dict:
 async def upload_dataset(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    model_id: str | None = None,
+    model_id: str | None = Form(None),
 ) -> dict:
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="The uploaded dataset is empty.")
+
+    if model_id is not None:
+        service = ModelService()
+        available_models = {m["id"] for m in service.list_catalog()}
+        if model_id not in available_models:
+            raise HTTPException(status_code=400, detail="Selected model is not available in the catalog.")
 
     try:
         run = create_run(file.filename or "dataset.jsonl", content, model_id=model_id)
