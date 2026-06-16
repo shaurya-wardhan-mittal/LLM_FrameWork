@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 import threading
 import uuid
 from datetime import datetime, timezone
@@ -110,6 +112,7 @@ def create_run(filename: str, file_bytes: bytes, model_id: str | None = None) ->
         row_count=len(cleaned_rows),
         params_b=params_b,
         max_seq_length=settings.max_seq_length,
+        model_id=selected_model_id,
     )
 
     state = {
@@ -145,30 +148,31 @@ def train_run(run_id: str) -> None:
     try:
         _update_state(run_id, status="running", stage="Starting training")
 
-        from app.services.trainer_service.pipeline import TrainingPipeline
+        repo_root = settings.runs_dir.parents[1]
+        venv_python = repo_root / "backend" / ".venv" / "Scripts" / "python.exe"
+        python_exe = str(venv_python) if venv_python.exists() else sys.executable
 
-        pipeline = TrainingPipeline(
-            run_id,
-            on_status=lambda stage: _update_state(
-                run_id,
-                status="running" if stage != "completed" else "completed",
-                stage=stage.replace("_", " ").title(),
-            ),
-        )
-        result = pipeline.run(
-            base_model_id=state["model_id"],
-            strategy=state["strategy"],
-            training_config=state["training_config"],
-            cleaned_path=str(_run_dir(run_id) / "dataset.jsonl"),
-            hf_token=settings.hf_token,
-        )
-        _update_state(
-            run_id,
-            status="completed",
-            stage="Completed",
-            output_path=result["export_path"],
-            result=result,
-        )
+        worker_script = repo_root / "backend" / "app" / "worker.py"
+        log_file = _run_dir(run_id) / "training.log"
+
+        # Start the training pipeline in a separate process
+        with open(log_file, "w", encoding="utf-8") as f:
+            proc = subprocess.Popen(
+                [python_exe, "-m", "app.worker", run_id],
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                cwd=str(repo_root / "backend"),
+            )
+            
+            # Wait briefly to detect immediate startup errors (e.g. syntax, imports)
+            try:
+                proc.wait(timeout=2.0)
+                if proc.returncode != 0:
+                    raise RuntimeError(f"Training worker exited immediately with code {proc.returncode}")
+            except subprocess.TimeoutExpired:
+                # Subprocess is running as expected
+                pass
+
     except Exception as exc:
         _update_state(
             run_id,

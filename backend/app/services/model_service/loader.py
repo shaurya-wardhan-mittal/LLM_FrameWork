@@ -1,5 +1,10 @@
 """Unsloth model loading for the local training workflow."""
 
+try:
+    import unsloth
+except ImportError:
+    pass
+
 from typing import Any, Tuple
 
 
@@ -16,8 +21,8 @@ def load_model_and_tokenizer(
     """
     from unsloth import FastLanguageModel
 
-    load_in_4bit = strategy == "qlora"
-    full_finetuning = strategy == "full"
+    load_in_4bit = (strategy == "qlora") or ("4bit" in model_id.lower())
+    full_finetuning = strategy == "full" and not load_in_4bit
 
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=model_id,
