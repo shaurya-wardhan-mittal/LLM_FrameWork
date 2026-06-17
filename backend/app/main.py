@@ -11,7 +11,7 @@ app = FastAPI(title=settings.app_name)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
@@ -34,6 +34,7 @@ def list_models() -> dict:
 
 
 @app.post("/upload", status_code=status.HTTP_202_ACCEPTED)
+
 async def upload_dataset(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),

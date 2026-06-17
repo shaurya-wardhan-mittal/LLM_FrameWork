@@ -1,4 +1,7 @@
 # Backend dependencies
+'python-3.11  py -3.11 -m venv .venv'
+'torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0'
+
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
 python-multipart==0.0.20
@@ -6,13 +9,11 @@ pydantic-settings==2.7.0
 psutil==6.1.1
 
 # Model training and Hugging Face integration
-torch>=2.1.0
-transformers>=4.35.0
-datasets>=2.14.0
-trl>=0.9.0
-accelerate>=0.24.0
-unsloth>=0.3.0
-bitsandbytes>=0.41.0
-peft>=0.5.0
-safetensors>=0.3.0
-huggingface-hub>=0.16.0
+transformers==4.52.4
+datasets==3.6.0
+trl==0.18.1
+accelerate==1.8.1
+bitsandbytes>=0.45.0
+peft==0.16.0
+safetensors==0.5.3
+huggingface-hub==0.33.0

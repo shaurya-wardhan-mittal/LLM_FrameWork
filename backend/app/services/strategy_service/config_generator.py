@@ -44,6 +44,8 @@ def generate_training_config(
         lr = 1e-4
     elif params_b >= 7:
         lr = 1.5e-4
+    elif params_b >= 30:
+        lr = 5.5e-5
     else:
         lr = 2e-4
 
