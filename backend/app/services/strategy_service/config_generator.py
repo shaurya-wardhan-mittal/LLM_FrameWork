@@ -30,6 +30,7 @@ def generate_training_config(
     row_count: int,
     params_b: float,
     max_seq_length: int = 2048,
+    model_id: str | None = None,
 ) -> dict[str, Any]:
     # Scale epochs inversely with dataset size
     if row_count < 500:
@@ -49,19 +50,21 @@ def generate_training_config(
     else:
         lr = 2e-4
 
+    is_4bit_model = model_id is not None and "4bit" in model_id.lower()
+
     # Batch size from strategy
     if strategy == "full":
         batch = 1
         grad_accum = 8
         lora_r = 0
         lora_alpha = 0
-        load_4bit = False
+        load_4bit = is_4bit_model
     elif strategy == "lora":
         batch = 2
         grad_accum = 4
         lora_r = 32 if params_b >= 7 else 16
         lora_alpha = lora_r
-        load_4bit = False
+        load_4bit = True if is_4bit_model else False
     else:
         batch = 2
         grad_accum = 4
