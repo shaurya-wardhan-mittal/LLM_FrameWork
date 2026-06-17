@@ -81,7 +81,6 @@ class TrainingPipeline:
         return train_path, eval_path
 
     def run(
-        print("PIPELINE RUN STARTED", flush=True)
         self,
         *,
         base_model_id: str,
@@ -91,7 +90,8 @@ class TrainingPipeline:
         checkpoint_path: str | None = None,
         hf_token: str | None = None,
     ) -> dict[str, Any]:
-         self.workspace.mkdir(parents=True, exist_ok=True)
+        print("PIPELINE RUN STARTED", flush=True)
+        self.workspace.mkdir(parents=True, exist_ok=True)
         config_path = self.workspace / "config.json"
         config_path.write_text(json.dumps(training_config, indent=2), encoding="utf-8")
 

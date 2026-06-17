@@ -9,27 +9,6 @@ CURATED_MODELS = [
         "family": "llama",
     },
     {
-        "id": "unsloth/Meta-Llama-3.1-8B-bnb-4bit",
-        "name": "Llama 3.1 8B (4-bit)",
-        "params_b": 8.0,
-        "context_length": 8192,
-        "family": "llama",
-    },
-    {
-        "id": "unsloth/Qwen2.5-7B-bnb-4bit",
-        "name": "Qwen 2.5 7B (4-bit)",
-        "params_b": 7.0,
-        "context_length": 32768,
-        "family": "qwen",
-    },
-    {
-        "id": "unsloth/gemma-2-9b-bnb-4bit",
-        "name": "Gemma 2 9B (4-bit)",
-        "params_b": 9.0,
-        "context_length": 8192,
-        "family": "gemma",
-    },
-    {
         "id": "unsloth/Phi-3.5-mini-instruct-bnb-4bit",
         "name": "Phi-3.5 Mini (4-bit)",
         "params_b": 3.8,
