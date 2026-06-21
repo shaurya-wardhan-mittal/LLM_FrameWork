@@ -30,7 +30,7 @@ def load_model_and_tokenizer(
         dtype=None,
         load_in_4bit=load_in_4bit,
         full_finetuning=full_finetuning,
-        token=hf_token,
+        
     )
     return model, tokenizer
 

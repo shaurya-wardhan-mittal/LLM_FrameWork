@@ -1,4 +1,5 @@
 import shutil
+import sys
 from pathlib import Path
 from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +23,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 def prepare_storage() -> None:
+    print("MAIN PYTHON:", sys.executable, flush=True)
     settings.runs_dir.mkdir(parents=True, exist_ok=True)
 
 

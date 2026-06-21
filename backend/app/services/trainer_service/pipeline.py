@@ -5,6 +5,11 @@ try:
 except ImportError:
     pass
 
+try:
+    from trl import SFTTrainer, SFTConfig
+except ImportError:
+    pass
+
 import json
 import logging
 import random
@@ -103,31 +108,71 @@ class TrainingPipeline:
             logger.info("Loading model %s", base_model_id)
 
             max_seq = training_config.get("max_seq_length", 2048)
+
+            # If the model is 4bit quantized, full fine-tuning is impossible.
+            # We override the strategy to qlora for safety (e.g. if the run was queued before the code fix).
+            if "4bit" in base_model_id.lower() and strategy.lower() == "full":
+                logger.warning("Forcing strategy to 'qlora' because the base model is quantized.")
+                strategy = "qlora"
+                if training_config.get("lora_r", 0) == 0:
+                    training_config["lora_r"] = 16
+                if training_config.get("lora_alpha", 0) == 0:
+                    training_config["lora_alpha"] = 16
+
             model, tokenizer = load_model_and_tokenizer(
                 base_model_id,
                 max_seq_length=max_seq,
                 strategy=strategy,
-                hf_token=hf_token or settings.hf_token,
+                hf_token=hf_token 
             )
+            
+            print("Strategy:", repr(strategy), flush=True)
+            print("Model loaded:", type(model))
+            print("Before LoRA:", hasattr(model, "peft_config"), flush=True)
+
+            strategy = strategy.lower()
 
             if strategy in ("lora", "qlora"):
-                model = apply_lora_adapters(
-                    model,
-                    lora_r=training_config.get("lora_r", 16),
-                    lora_alpha=training_config.get("lora_alpha", 16),
-                    lora_dropout=training_config.get("lora_dropout", 0.0),
-                )
+                try:
+                    print("Applying LoRA adapters...")
+
+                    model = apply_lora_adapters(
+                        model,
+                        lora_r=training_config.get("lora_r", 16),
+                        lora_alpha=training_config.get("lora_alpha", 16),
+                        lora_dropout=training_config.get("lora_dropout", 0.0),
+                    )
+                    print("LoRA attached successfully")
+                    print("After LoRA:", hasattr(model, "peft_config"), flush=True)
+                    print("PEFT Config:", getattr(model, "peft_config", None))
+
+                    trainable = sum(
+                        p.numel()
+                        for p in model.parameters()
+                        if p.requires_grad
+                    )
+                    total = sum(p.numel() for p in model.parameters()if p.requires_grad)
+
+                    print(f"Trainable params: {trainable:,}", flush=True)
+                    print(f"Total params: {total:,}")
+
+                except Exception as e:
+                    import traceback
+                    print("FAILED TO ATTACH LORA")
+                    print("Exception:", repr(e))
+                    print(traceback.format_exc())
+                    raise
+
+               
 
             from datasets import load_dataset
-            from transformers import TrainingArguments
-            from trl import SFTTrainer
             from unsloth import is_bfloat16_supported
 
             train_ds = load_dataset("json", data_files=str(train_path), split="train")
             eval_ds = load_dataset("json", data_files=str(eval_path), split="train")
 
             output_dir = str(self.workspace / "checkpoints")
-            args = TrainingArguments(
+            args = SFTConfig(
                 per_device_train_batch_size=training_config.get("per_device_train_batch_size", 2),
                 gradient_accumulation_steps=training_config.get("gradient_accumulation_steps", 4),
                 warmup_steps=training_config.get("warmup_steps", 10),
@@ -145,16 +190,30 @@ class TrainingPipeline:
                 eval_strategy="steps",
                 eval_steps=training_config.get("eval_steps", 100),
                 report_to="none",
+                max_seq_length=max_seq,
+                dataset_text_field="text",
             )
 
             callback = JobEventCallback(self.job_id, on_metric=self.on_metric)
+
+            print("\n===== BEFORE SFTTRAINER =====", flush=True)
+            print("Model type:", type(model))
+            print("Has peft:", hasattr(model, "peft_config"))
+            print("PEFT config:", getattr(model, "peft_config", None))
+
+            trainable = sum(
+                p.numel()
+                for p in model.parameters()
+                if p.requires_grad
+            )
+            print("Trainable params:", trainable)
+            print("============================\n", flush=True)
+
             trainer = SFTTrainer(
                 model=model,
                 tokenizer=tokenizer,
                 train_dataset=train_ds,
                 eval_dataset=eval_ds,
-                dataset_text_field="text",
-                max_seq_length=max_seq,
                 args=args,
                 callbacks=[callback],
             )

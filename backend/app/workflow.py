@@ -106,6 +106,7 @@ def create_run(filename: str, file_bytes: bytes, model_id: str | None = None) ->
         free_vram_gb,
         params_b,
         settings.max_seq_length,
+        selected_model_id,
     )
     training_config = generate_training_config(
         strategy=strategy,
@@ -150,13 +151,14 @@ def train_run(run_id: str) -> None:
 
         repo_root = settings.runs_dir.parents[1]
         venv_python = repo_root / "backend" / ".venv" / "Scripts" / "python.exe"
-        python_exe = str(venv_python) if venv_python.exists() else sys.executable
+        python_exe = sys.executable
 
         worker_script = repo_root / "backend" / "app" / "worker.py"
         log_file = _run_dir(run_id) / "training.log"
 
         # Start the training pipeline in a separate process
         with open(log_file, "w", encoding="utf-8") as f:
+            print(f"Launching worker with: {python_exe}", flush=True)
             proc = subprocess.Popen(
                 [python_exe, "-m", "app.worker", run_id],
                 stdout=f,

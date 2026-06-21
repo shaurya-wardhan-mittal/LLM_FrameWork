@@ -3,20 +3,17 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $Backend = "$Root\backend"
 $Frontend = "$Root\frontend"
-$Venv = "$Backend\.venv"
+$Venv = "$Root\unsloth_env"
 
-if (-not (Test-Path $Venv)) {
-    python -m venv $Venv
-}
 
-& "$Venv\Scripts\pip.exe" install -q -r "$Backend\requirements.txt"
+& "$Venv\Scripts\python.exe" -m pip install -q -r "$Backend\requirements.txt"
 
 Write-Host "Starting API on http://localhost:8000" -ForegroundColor Green
 $apiJob = Start-Job -ScriptBlock {
     param($Backend, $Venv)
     Set-Location $Backend
-    $env:PYTHONPATH = $Backend
-    & "$Venv\Scripts\uvicorn.exe" app.main:app --host 127.0.0.1 --port 8000 --reload
+    $env:PYTHONPATH = "$Backend;$env:PYTHONPATH"
+    & "$Venv\Scripts\python.exe" -m uvicorn app.main:app --host 127.0.0.1 --port 8000 
 } -ArgumentList $Backend, $Venv
 
 Start-Sleep -Seconds 2

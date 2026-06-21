@@ -1,5 +1,5 @@
 """Curated Unsloth-compatible model catalog."""
-
+import re
 CURATED_MODELS = [
     {
         "id": "unsloth/Llama-3.2-3B-bnb-4bit",
@@ -9,19 +9,56 @@ CURATED_MODELS = [
         "family": "llama",
     },
     {
+        "id": "unsloth/Llama-3.2-1B-bnb-4bit",
+        "name": "Llama 3.2 1B (4-bit)",
+        "params_b": 1.0,
+        "context_length": 8192,
+        "family": "llama",
+    },
+    {
+        "id": "unsloth/Meta-Llama-3.1-8B-bnb-4bit",
+        "name": "Llama 3.1 8B (4-bit)",
+        "params_b": 8.0,
+        "context_length": 8192,
+        "family": "llama",
+    },
+    {
+        "id": "unsloth/Meta-Llama-3.1-8B-bnb-4bit",
+        "name": "Llama 3.1 8B (4-bit)",
+        "params_b": 8.0,
+        "context_length": 8192,
+        "family": "llama",
+    },
+    {
+        "id": "unsloth/Meta-Llama-3.1-70B-bnb-4bit",
+        "name": "Llama 3.1 70B (4-bit)",
+        "params_b": 70.0,
+        "context_length": 8192,
+        "family": "llama",
+    },
+    {
+        "id": "unsloth/CodeLlama-7B-bnb-4bit",
+        "name": "CodeLlama 7B (4-bit)",
+        "params_b": 7.0,
+        "context_length": 16384,
+        "family": "codellama",
+    },
+
+    {
         "id": "unsloth/Phi-3.5-mini-instruct-bnb-4bit",
         "name": "Phi-3.5 Mini (4-bit)",
         "params_b": 3.8,
         "context_length": 4096,
         "family": "phi",
     },
-    {
-    "id": "unsloth/Llama-3.2-1B-bnb-4bit",
-    "name": "Llama 3.2 1B (4-bit)",
-    "params_b": 1.0,
-    "context_length": 8192,
-    "family": "llama",
+    {   
+        "id": "unsloth/Phi-4-mini-instruct-bnb-4bit",
+        "name": "Phi-4 Mini (4-bit)",
+        "params_b": 3.8,
+        "context_length": 16384,
+        "family": "phi",
     },
+    
     {
     "id": "unsloth/Qwen2.5-3B-bnb-4bit",
     "name": "Qwen 2.5 3B (4-bit)",
@@ -29,26 +66,31 @@ CURATED_MODELS = [
     "context_length": 32768,
     "family": "qwen",
     },
-    {   
-    "id": "unsloth/Phi-4-mini-instruct-bnb-4bit",
-    "name": "Phi-4 Mini (4-bit)",
-    "params_b": 3.8,
-    "context_length": 16384,
-    "family": "phi",
-    },
-
-
-    {
-    "id": "unsloth/Meta-Llama-3.1-8B-bnb-4bit",
-    "name": "Llama 3.1 8B (4-bit)",
-    "params_b": 8.0,
-    "context_length": 8192,
-    "family": "llama",
-    },
     {
     "id": "unsloth/Qwen2.5-7B-bnb-4bit",
     "name": "Qwen 2.5 7B (4-bit)",
     "params_b": 7.0,
+    "context_length": 32768,
+    "family": "qwen",
+    },
+    {
+    "id": "unsloth/Qwen2.5-32B-bnb-4bit",
+    "name": "Qwen 2.5 32B (4-bit)",
+    "params_b": 32.0,
+    "context_length": 32768,
+    "family": "qwen",
+    },
+    {
+    "id": "unsloth/Qwen2.5-0.5B-bnb-4bit",
+    "name": "Qwen 2.5 0.5B (4-bit)",
+    "params_b": 0.5,
+    "context_length": 32768,
+    "family": "qwen",
+    },
+    {
+    "id": "unsloth/Qwen2.5-1.5B-bnb-4bit",
+    "name": "Qwen 2.5 1.5B (4-bit)",
+    "params_b": 1.5,
     "context_length": 32768,
     "family": "qwen",
     },
@@ -59,30 +101,13 @@ CURATED_MODELS = [
     "context_length": 8192,
     "family": "gemma",
     },
-
-
     {
-    "id": "unsloth/Meta-Llama-3.1-70B-bnb-4bit",
-    "name": "Llama 3.1 70B (4-bit)",
-    "params_b": 70.0,
+    "id": "unsloth/gemma-2-2b-bnb-4bit",
+    "name": "Gemma 2 2B (4-bit)",
+    "params_b": 2.0,
     "context_length": 8192,
-    "family": "llama",
-    },
-    {
-    "id": "unsloth/Qwen2.5-32B-bnb-4bit",
-    "name": "Qwen 2.5 32B (4-bit)",
-    "params_b": 32.0,
-    "context_length": 32768,
-    "family": "qwen",
-    },
-
-    {
-    "id": "unsloth/CodeLlama-7B-bnb-4bit",
-    "name": "CodeLlama 7B (4-bit)",
-    "params_b": 7.0,
-    "context_length": 16384,
-    "family": "codellama",
-    },
+    "family": "gemma",
+    },    
     {
     "id": "unsloth/DeepSeek-Coder-V2-Lite-bnb-4bit",
     "name": "DeepSeek Coder V2 Lite (4-bit)",
@@ -105,6 +130,16 @@ CURATED_MODELS = [
     "context_length": 32768,
     "family": "deepseek",
     },
+    {
+    "id": "unsloth/tinyllama-bnb-4bit",
+    "name": "TinyLlama 1.1B (4-bit)",
+    "params_b": 1.1,
+    "context_length": 2048,
+    "family": "tinyllama",
+    },
+    
+    
+    
 
 ]
 
@@ -112,10 +147,17 @@ CURATED_MODELS = [
 def estimate_params_from_id(model_id: str) -> float:
     """Rough parameter count in billions from model id string."""
     lower = model_id.lower()
-    for token in ("3b", "7b", "8b", "9b", "13b", "70b", "1b", "1.5b", "2b", "4b","7b", "8b", "9b", "13b", "14b", "27b", "32b", "70b","72b"):
-        if token in lower:
-            return float(token.replace("b", ""))
+
+    match = re.search(
+        r"(\d+(?:\.\d+)?)b",
+        lower,
+    )
+
+    if match:
+        return float(match.group(1))
+
     for m in CURATED_MODELS:
         if m["id"] == model_id:
             return m["params_b"]
+
     return 7.0  # conservative default

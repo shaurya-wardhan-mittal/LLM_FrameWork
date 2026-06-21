@@ -12,16 +12,19 @@ def estimate_vram_gb(params_b: float, strategy: str, max_seq_length: int) -> flo
     return params_b * 0.75 * seq_factor  # qlora
 
 
-def select_strategy(free_vram_gb: float, params_b: float, max_seq_length: int) -> tuple[str, str]:
+def select_strategy(free_vram_gb: float, params_b: float, max_seq_length: int, model_id: str | None = None) -> tuple[str, str]:
+    is_quantized = model_id is not None and "4bit" in model_id.lower()
+    
     full_need = estimate_vram_gb(params_b, "full", max_seq_length)
     lora_need = estimate_vram_gb(params_b, "lora", max_seq_length)
     qlora_need = estimate_vram_gb(params_b, "qlora", max_seq_length)
 
-    if free_vram_gb >= full_need * 1.1:
+    if not is_quantized and free_vram_gb >= full_need * 1.1:
         return "full", f"VRAM {free_vram_gb:.1f}GB ≥ full FT estimate {full_need:.1f}GB"
     if free_vram_gb >= lora_need * 1.1:
         return "lora", f"VRAM {free_vram_gb:.1f}GB ≥ LoRA estimate {lora_need:.1f}GB"
     return "qlora", f"VRAM {free_vram_gb:.1f}GB; QLoRA estimate {qlora_need:.1f}GB"
+
 
 
 def generate_training_config(

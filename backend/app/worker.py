@@ -1,5 +1,9 @@
 import sys
 from pathlib import Path
+import os
+import signal
+import sys
+from pathlib import Path
 
 # Add backend root directory to sys.path so app module can be found
 backend_dir = Path(__file__).resolve().parent.parent
@@ -7,11 +11,28 @@ if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
 
-
 def run_worker(run_id: str):
+    print("PID:", os.getpid(), flush=True)
+    print("Parent PID:", os.getppid(), flush=True)
+    print("Python:", sys.executable, flush=True)
+
+
+    print("Python:", sys.executable)
     print("WORKER STARTED", flush=True)
 
     print("About to import unsloth", flush=True)
+
+    def handler(sig, frame):
+        print(f"Received signal: {sig}", flush=True)
+
+    signal.signal(signal.SIGINT, handler)
+
+    if hasattr(signal, "SIGBREAK"):
+        signal.signal(signal.SIGBREAK, handler)
+
+    if hasattr(signal, "SIGTERM"):
+        signal.signal(signal.SIGTERM, handler)
+        
     import unsloth
     print("Imported unsloth", flush=True)
 
